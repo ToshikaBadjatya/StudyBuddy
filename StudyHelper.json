@@ -1,0 +1,1336 @@
+{
+  "name": "StudyHelper",
+  "nodes": [
+    {
+      "parameters": {
+        "jsCode": "const item = $('Document Submission').first();\nconst form1 = item.json;\n\nconst summaryLength = $input.first().json['What is the desired length of summary'];\nlet chunkLength;\nlet overlapLength;\n\nif (summaryLength <= 100) {\n  chunkLength = 2000;\n  overlapLength = 300;\n} else if (summaryLength <= 300) {\n  chunkLength = 1200;\n  overlapLength = 200;\n} else if (summaryLength <= 500) {\n  chunkLength = 800;\n  overlapLength = 120;\n} else {\n  chunkLength = 500;\n  overlapLength = 80;\n}\n\n\n\n\nreturn [\n  {\n    json: {\n      name: form1['Submitter Name'],\n      email: form1['Submitter Email'],\n      submitted_at: new Date().toISOString(),\n         filename: form1['Upload Documents'][0].filename,\n        mimeType: form1['Upload Documents'][0].mimetype,\n      binary: item.binary,\n      action:form1['What action you want to perform'],\n      summaryLength:summaryLength,\n      chunkingLength:chunkLength,\n      overlapLength:overlapLength,\n      namespace:\"summary\"\n    }\n    \n \n  }\n];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -496,
+        -352
+      ],
+      "id": "6deed674-0e24-4f3d-abc2-77b5c147ff32",
+      "name": "Build Packet Metadata"
+    },
+    {
+      "parameters": {
+        "operation": "text",
+        "binaryPropertyName": "Upload Documents",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.extractFromFile",
+      "typeVersion": 1.1,
+      "position": [
+        192,
+        -64
+      ],
+      "id": "3eb62500-8291-4d32-8053-1b9f11ee23ef",
+      "name": "Extract from File3"
+    },
+    {
+      "parameters": {
+        "binaryPropertyName": "Upload Documents",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.extractFromFile",
+      "typeVersion": 1.1,
+      "position": [
+        208,
+        160
+      ],
+      "id": "5f875b25-56da-4538-a279-b5f284a75ece",
+      "name": "Extract from File2"
+    },
+    {
+      "parameters": {
+        "operation": "html",
+        "binaryPropertyName": "Upload Documents",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.extractFromFile",
+      "typeVersion": 1.1,
+      "position": [
+        192,
+        -240
+      ],
+      "id": "d62b0119-d8c2-460e-ab42-a6d1f1c7d4b0",
+      "name": "Extract from File1"
+    },
+    {
+      "parameters": {
+        "operation": "pdf",
+        "binaryPropertyName": "={{ $json.binary.Upload_Documents }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.extractFromFile",
+      "typeVersion": 1.1,
+      "position": [
+        208,
+        -448
+      ],
+      "id": "6dfec7b0-14c0-455a-8d08-271bd7ddff6c",
+      "name": "Extract from File"
+    },
+    {
+      "parameters": {
+        "formTitle": "Study Buddy trigger ",
+        "formDescription": "This is the sample trigger node for RAG",
+        "formFields": {
+          "values": [
+            {
+              "fieldLabel": "Submitter Name"
+            },
+            {
+              "fieldLabel": "Submitter Email",
+              "fieldType": "email",
+              "requiredField": true
+            },
+            {
+              "fieldLabel": "Upload Documents",
+              "fieldType": "file",
+              "requiredField": true
+            },
+            {
+              "fieldLabel": "What action you want to perform",
+              "fieldType": "radio",
+              "fieldOptions": {
+                "values": [
+                  {
+                    "option": "Summarize"
+                  },
+                  {
+                    "option": "Generate Questionnaire"
+                  },
+                  {
+                    "option": "Open a Chat Window"
+                  }
+                ]
+              }
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.formTrigger",
+      "typeVersion": 2.5,
+      "position": [
+        -1360,
+        -176
+      ],
+      "id": "5586c890-2c95-4979-a413-a34f42be6012",
+      "name": "Document Submission",
+      "webhookId": "de16a4e1-c303-4aa6-8b57-8be5b71c6e56"
+    },
+    {
+      "parameters": {
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{ $json.mimeType }}",
+                    "rightValue": "application/pdf",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    },
+                    "id": "eeae08dc-24d7-4a82-976b-912b5d11fa60"
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "pdf"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "id": "62d5069b-350e-4f44-90a0-f120f9ea465c",
+                    "leftValue": "={{ $json.mimeType }}",
+                    "rightValue": "text/html",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals",
+                      "name": "filter.operator.equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "html"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "id": "565accc7-9826-433b-9891-8373a2927e18",
+                    "leftValue": "={{ $json.mimeType }}",
+                    "rightValue": "application/msword",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals",
+                      "name": "filter.operator.equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "doc"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "id": "6f9f9f02-1261-496c-8432-928c37750e07",
+                    "leftValue": "{{ $json.mimeType }}",
+                    "rightValue": "text/csv",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals",
+                      "name": "filter.operator.equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "csv"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3.4,
+      "position": [
+        -112,
+        -208
+      ],
+      "id": "a8544c02-3c14-40b4-94e5-d8af00648007",
+      "name": "Switch"
+    },
+    {
+      "parameters": {
+        "options": {
+          "dimensions": 512
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.embeddingsOpenAi",
+      "typeVersion": 1.2,
+      "position": [
+        704,
+        32
+      ],
+      "id": "13140022-6775-4232-9077-6ec0acb6be4a",
+      "name": "Embeddings OpenAI",
+      "credentials": {
+        "openAiApi": {
+          "id": null,
+          "name": "",
+          "__aiGatewayManaged": true
+        }
+      }
+    },
+    {
+      "parameters": {
+        "dataType": "binary",
+        "textSplittingMode": "custom",
+        "options": {
+          "splitPages": false,
+          "metadata": {
+            "metadataValues": [
+              {
+                "name": "namespace"
+              }
+            ]
+          }
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.documentDefaultDataLoader",
+      "typeVersion": 1.1,
+      "position": [
+        816,
+        -32
+      ],
+      "id": "f298672d-55e5-4941-848d-19437423ef8f",
+      "name": "Default Data Loader"
+    },
+    {
+      "parameters": {
+        "operation": "toText",
+        "sourceProperty": "text",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.convertToFile",
+      "typeVersion": 1.1,
+      "position": [
+        416,
+        -208
+      ],
+      "id": "8e37460d-3c00-4416-b52b-7101913608cb",
+      "name": "Convert to File"
+    },
+    {
+      "parameters": {
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{ $('Merge').item.json.action }}",
+                    "rightValue": "Summarize",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    },
+                    "id": "6c8afb86-8624-4763-8ed1-e8350d3a6e71"
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "Summarize"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "id": "5b32a639-9876-47bd-aa16-fa31262bec7e",
+                    "leftValue": "={{ $('Merge').item.json.action }}",
+                    "rightValue": "Generate Questionnaire",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "Generate Questionnaire"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3.4,
+      "position": [
+        1056,
+        -272
+      ],
+      "id": "ad54f35d-a92a-4844-a9cf-7e08e01f7e0b",
+      "name": "Switch2"
+    },
+    {
+      "parameters": {
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{ $json['What action you want to perform'] }}",
+                    "rightValue": "Summarize",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    },
+                    "id": "6c8afb86-8624-4763-8ed1-e8350d3a6e71"
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "Summarize"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "id": "5b32a639-9876-47bd-aa16-fa31262bec7e",
+                    "leftValue": "={{ $json['What action you want to perform'] }}",
+                    "rightValue": "Generate Questionnaire",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "Generate Questionnaire"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "id": "e1086d77-0c51-46c7-b80f-c7c07b9183da",
+                    "leftValue": "={{ $json['What action you want to perform'] }}",
+                    "rightValue": "Open a Chat Window",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "Open a Chat Window"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3.4,
+      "position": [
+        -1152,
+        -192
+      ],
+      "id": "049edd02-b44e-4d91-ab6c-b551a9607250",
+      "name": "Switch3"
+    },
+    {
+      "parameters": {
+        "formFields": {
+          "values": [
+            {
+              "fieldLabel": "What is the desired length of summary",
+              "fieldType": "number"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.form",
+      "typeVersion": 2.5,
+      "position": [
+        -880,
+        -352
+      ],
+      "id": "cc37a95e-2ff1-4f80-901c-9fb972660c48",
+      "name": "Form",
+      "webhookId": "3cdee550-08fd-42a5-a341-77f7874795b5"
+    },
+    {
+      "parameters": {
+        "formFields": {
+          "values": [
+            {
+              "fieldLabel": "Topic for question generation"
+            },
+            {
+              "fieldLabel": "Question count",
+              "fieldType": "number"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.form",
+      "typeVersion": 2.5,
+      "position": [
+        -832,
+        -160
+      ],
+      "id": "545e3201-f1b9-4621-80cb-29e3d6b04242",
+      "name": "Form1",
+      "webhookId": "3cdee550-08fd-42a5-a341-77f7874795b5"
+    },
+    {
+      "parameters": {
+        "jsCode": "const item = $('Document Submission').first();\nconst form1 = item.json;\nconst questionTopic = $input.first().json['Topic for question generation']\nconst questionCount =$input.first().json['Question count']\nlet chunkLength=200;\nlet overlapLength=20;\n\nreturn [\n  {\n    json: {\n      name: form1['Submitter Name'],\n      email: form1['Submitter Email'],\n      submitted_at: new Date().toISOString(),\n         filename: form1['Upload Documents'][0].filename,\n        mimeType: form1['Upload Documents'][0].mimetype,\n      binary: item.binary,\n      action:form1['What action you want to perform'],\n      chunkingLength:chunkLength,\n      overlapLength:overlapLength,\n      questionCount:questionCount,\n      questionTopic:questionTopic,\n      namespace:\"Questionnaire\"\n    }\n    \n \n  }\n];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -512,
+        -160
+      ],
+      "id": "c8538be8-c23d-4201-b770-aa93e3297431",
+      "name": "Build Packet Metadata1"
+    },
+    {
+      "parameters": {
+        "jsCode": "const item = $('Document Submission').first();\nconst form1 = item.json;\n\nlet chunkLength=500;\nlet overlapLength=75;\n\nreturn [\n  {\n    json: {\n      name: form1['Submitter Name'],\n      email: form1['Submitter Email'],\n      submitted_at: new Date().toISOString(),\n         filename: form1['Upload Documents'][0].filename,\n        mimeType: form1['Upload Documents'][0].mimetype,\n      binary: item.binary,\n      action:form1['What action you want to perform'],\n      chunkingLength:chunkLength,\n      overlapLength:overlapLength,\n      namespace:\"Chatbot\"\n    }\n    \n \n  }\n];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -512,
+        80
+      ],
+      "id": "27bac570-1955-42d8-8fe9-c76e93d24476",
+      "name": "Build Packet Metadata2"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "You are a document summarizor. Your job is to summarize the data obtained.\nCritical Rules\n1. Return the information from the source and do not invent information\n2. Do not hallucinate or invent data \n3. In case no valid data available, show insufficient data available \n4. 4. Run for max 6 mins and if nothing obtained \nshow timeout\n\nOutput Format\nGenerate output in the form of paragraph. Keep the language ",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3.1,
+      "position": [
+        1456,
+        -560
+      ],
+      "id": "83d7879a-ebfa-47b7-ba93-23e54dbf0c48",
+      "name": "AI Agent1"
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "mode": "list",
+          "value": "gpt-5-mini"
+        },
+        "builtInTools": {},
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.3,
+      "position": [
+        1440,
+        -320
+      ],
+      "id": "34d77ed8-d4c3-4a78-a1cc-2fa06e0aae19",
+      "name": "OpenAI Chat Model1",
+      "credentials": {
+        "openAiApi": {
+          "id": null,
+          "name": "",
+          "__aiGatewayManaged": true
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "completion",
+        "completionTitle": "Your output is",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.form",
+      "typeVersion": 2.5,
+      "position": [
+        2320,
+        -512
+      ],
+      "id": "d046f1fb-2a5f-41dd-a08a-153915a3154e",
+      "name": "Form3",
+      "webhookId": "eef86a20-27a3-48e8-bb4c-4a4b66b70180"
+    },
+    {
+      "parameters": {
+        "content": "User Input",
+        "height": 592,
+        "width": 800
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -1408,
+        -384
+      ],
+      "id": "0ffb3b69-1065-474f-8339-e9133782c907",
+      "name": "Sticky Note"
+    },
+    {
+      "parameters": {
+        "content": "Data Ingestion",
+        "height": 800,
+        "width": 1120
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -576,
+        -512
+      ],
+      "id": "76933ded-39ab-4a8b-9dec-c27e4d2f6df4",
+      "name": "Sticky Note1"
+    },
+    {
+      "parameters": {
+        "content": "Chunking and Embedding ",
+        "height": 896,
+        "width": 544
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        656,
+        -528
+      ],
+      "id": "684cfa08-d841-4af4-a385-20867ba5909a",
+      "name": "Sticky Note2"
+    },
+    {
+      "parameters": {
+        "content": "Output",
+        "height": 256,
+        "width": 256
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        2256,
+        -592
+      ],
+      "id": "bd581509-5242-4ec8-a4c8-eb8c102f6496",
+      "name": "Sticky Note3"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=You are a question generator. Your job is to find the topic  {{ $('Merge').item.json.questionTopic }} from the pine code data and generate questions.\nCritical Rules\n1. Build the questions from the source and keep the difficulty level of questions simple?\n2. Do not hallucinate or invent data \n3. Generate unique {{ $('Merge').item.json.questionCount }} questions\n4. Run for max 6 mins and if nothing obtained \nshow timeout\nOutput Format\nGenerate output in the form bullets like \nQ1> First question\nQ2 Second question and so on",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3.1,
+      "position": [
+        1472,
+        -160
+      ],
+      "id": "1bb6199a-85d7-4742-aa74-fc7dd250726d",
+      "name": "AI Agent2"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3.1,
+      "position": [
+        1488,
+        224
+      ],
+      "id": "09b4aa65-3a72-47bf-b0da-041c1945e63e",
+      "name": "AI Agent3"
+    },
+    {
+      "parameters": {
+        "operation": "completion",
+        "completionTitle": "Your output is",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.form",
+      "typeVersion": 2.5,
+      "position": [
+        2352,
+        -128
+      ],
+      "id": "e0443327-f8ae-4c1e-962e-28c73d871b9e",
+      "name": "Form4",
+      "webhookId": "eef86a20-27a3-48e8-bb4c-4a4b66b70180"
+    },
+    {
+      "parameters": {
+        "content": "Output",
+        "height": 256,
+        "width": 256
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        2272,
+        -208
+      ],
+      "id": "6fad3bce-64a3-4ba3-8d68-0a5919573270",
+      "name": "Sticky Note4"
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "mode": "list",
+          "value": "gpt-5-mini"
+        },
+        "builtInTools": {},
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.3,
+      "position": [
+        1456,
+        16
+      ],
+      "id": "2dc0b74c-bbe7-45f5-96c4-327e73ab4460",
+      "name": "OpenAI Chat Model2",
+      "credentials": {
+        "openAiApi": {
+          "id": null,
+          "name": "",
+          "__aiGatewayManaged": true
+        }
+      }
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "mode": "list",
+          "value": "gpt-5-mini"
+        },
+        "builtInTools": {},
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.3,
+      "position": [
+        1504,
+        416
+      ],
+      "id": "ae3199b2-fc6d-4a6d-9c00-7166ad19663b",
+      "name": "OpenAI Chat Model3",
+      "credentials": {
+        "openAiApi": {
+          "id": null,
+          "name": "",
+          "__aiGatewayManaged": true
+        }
+      }
+    },
+    {
+      "parameters": {
+        "mode": "insert",
+        "pineconeIndex": {
+          "__rl": true,
+          "value": "studyhelper",
+          "mode": "list",
+          "cachedResultName": "studyhelper"
+        },
+        "embeddingBatchSize": 150,
+        "options": {
+          "pineconeNamespace": "={{ $('Merge').item.json.namespace }}"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.vectorStorePinecone",
+      "typeVersion": 1.3,
+      "position": [
+        704,
+        -240
+      ],
+      "id": "d600cb7e-0cca-46b8-86ff-4a42680bc5c3",
+      "name": "Summarize Pinecone Vector Store",
+      "credentials": {
+        "pineconeApi": {
+          "id": "R7yjRdCHWhgOabmB",
+          "name": "Pinecone account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.chatTrigger",
+      "typeVersion": 1.4,
+      "position": [
+        1328,
+        224
+      ],
+      "id": "08832e16-0f8b-4371-b4a5-cffe2c957a6b",
+      "name": "When chat message received",
+      "webhookId": "61c81ed1-25f2-468b-8a2f-6992ec543160"
+    },
+    {
+      "parameters": {
+        "mode": "retrieve-as-tool",
+        "toolDescription": "Work with pine-cone vector store to answer the requested question. Keep the answer concise and crisp. Do not invent answer or hallucinate. \nOutput \n1. Sound confident \n2. remove characters like \\n if there in output",
+        "pineconeIndex": {
+          "__rl": true,
+          "value": "studyhelper",
+          "mode": "list",
+          "cachedResultName": "studyhelper"
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.vectorStorePinecone",
+      "typeVersion": 1.3,
+      "position": [
+        1616,
+        432
+      ],
+      "id": "c717ecfd-deca-442c-92dd-e2887aab82c5",
+      "name": "Pinecone Vector Store",
+      "credentials": {
+        "pineconeApi": {
+          "id": "R7yjRdCHWhgOabmB",
+          "name": "Pinecone account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "chunkSize": "={{ $('Merge').item.json.chunkingLength }}",
+        "chunkOverlap": "={{ $('Merge').item.json.overlapLength }}",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.textSplitterRecursiveCharacterTextSplitter",
+      "typeVersion": 1,
+      "position": [
+        848,
+        176
+      ],
+      "id": "a43136c9-86e8-4160-b2b9-c93e6ecd7088",
+      "name": "Recursive Character Text Splitter"
+    },
+    {
+      "parameters": {
+        "numberInputs": 3
+      },
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3.2,
+      "position": [
+        -288,
+        -192
+      ],
+      "id": "e1eb5aa6-2b0c-46b4-933d-6afc54b4b6b9",
+      "name": "Merge"
+    },
+    {
+      "parameters": {
+        "mode": "retrieve-as-tool",
+        "toolDescription": "Work with pine-cone vector store to obtain the summary of the content. Use chunks that are sematic different but conceptually aligned\nOutput \n1. Sound confident \n2. remove characters like \\n if there in output",
+        "pineconeIndex": {
+          "__rl": true,
+          "value": "studyhelper",
+          "mode": "list",
+          "cachedResultName": "studyhelper"
+        },
+        "topK": 15,
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.vectorStorePinecone",
+      "typeVersion": 1.3,
+      "position": [
+        1760,
+        -336
+      ],
+      "id": "f77da620-270f-49eb-af20-697b45332b4f",
+      "name": "Pinecone Vector Store1",
+      "credentials": {
+        "pineconeApi": {
+          "id": "R7yjRdCHWhgOabmB",
+          "name": "Pinecone account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "mode": "retrieve-as-tool",
+        "toolDescription": "Work with pine-cone vector store to derive chunks relevant to  {{ $('Merge').item.json.questionTopic }} . Use semantic search for identifying right chunks",
+        "pineconeIndex": {
+          "__rl": true,
+          "value": "studyhelper",
+          "mode": "list",
+          "cachedResultName": "studyhelper"
+        },
+        "topK": 8,
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.vectorStorePinecone",
+      "typeVersion": 1.3,
+      "position": [
+        1776,
+        32
+      ],
+      "id": "9f320310-8ba3-4ddd-aaac-d7fda845cad1",
+      "name": "Pinecone Vector Store2",
+      "credentials": {
+        "pineconeApi": {
+          "id": "R7yjRdCHWhgOabmB",
+          "name": "Pinecone account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "options": {
+          "dimensions": 512
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.embeddingsOpenAi",
+      "typeVersion": 1.2,
+      "position": [
+        1664,
+        800
+      ],
+      "id": "9e7d1966-304a-4f0f-93bc-d2912045de83",
+      "name": "Embeddings OpenAI1",
+      "credentials": {
+        "openAiApi": {
+          "id": null,
+          "name": "",
+          "__aiGatewayManaged": true
+        }
+      }
+    },
+    {
+      "parameters": {
+        "content": "Retrieval",
+        "height": 1568,
+        "width": 816
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        1264,
+        -608
+      ],
+      "id": "412bc3dd-9f20-4872-b62d-dda446807028",
+      "name": "Sticky Note5"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Build Packet Metadata": {
+      "main": [
+        [
+          {
+            "node": "Merge",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Document Submission": {
+      "main": [
+        [
+          {
+            "node": "Switch3",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Switch": {
+      "main": [
+        [
+          {
+            "node": "Extract from File",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Extract from File1",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Extract from File3",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Extract from File2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Embeddings OpenAI": {
+      "ai_embedding": [
+        [
+          {
+            "node": "Summarize Pinecone Vector Store",
+            "type": "ai_embedding",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Default Data Loader": {
+      "ai_document": [
+        [
+          {
+            "node": "Summarize Pinecone Vector Store",
+            "type": "ai_document",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Extract from File": {
+      "main": [
+        [
+          {
+            "node": "Convert to File",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Extract from File1": {
+      "main": [
+        [
+          {
+            "node": "Convert to File",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Extract from File2": {
+      "main": [
+        [
+          {
+            "node": "Convert to File",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Extract from File3": {
+      "main": [
+        [
+          {
+            "node": "Convert to File",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Convert to File": {
+      "main": [
+        [
+          {
+            "node": "Summarize Pinecone Vector Store",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Switch2": {
+      "main": [
+        [
+          {
+            "node": "AI Agent1",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "AI Agent2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Switch3": {
+      "main": [
+        [
+          {
+            "node": "Form",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Form1",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Build Packet Metadata2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Form": {
+      "main": [
+        [
+          {
+            "node": "Build Packet Metadata",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Form1": {
+      "main": [
+        [
+          {
+            "node": "Build Packet Metadata1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Build Packet Metadata1": {
+      "main": [
+        [
+          {
+            "node": "Merge",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "Build Packet Metadata2": {
+      "main": [
+        [
+          {
+            "node": "Merge",
+            "type": "main",
+            "index": 2
+          }
+        ]
+      ]
+    },
+    "OpenAI Chat Model1": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent1",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Agent1": {
+      "main": [
+        [
+          {
+            "node": "Form3",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Agent2": {
+      "main": [
+        [
+          {
+            "node": "Form4",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI Chat Model2": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent2",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI Chat Model3": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent3",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Summarize Pinecone Vector Store": {
+      "main": [
+        [
+          {
+            "node": "Switch2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "When chat message received": {
+      "main": [
+        [
+          {
+            "node": "AI Agent3",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Pinecone Vector Store": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent3",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Recursive Character Text Splitter": {
+      "ai_textSplitter": [
+        [
+          {
+            "node": "Default Data Loader",
+            "type": "ai_textSplitter",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Merge": {
+      "main": [
+        [
+          {
+            "node": "Switch",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Pinecone Vector Store1": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent1",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Pinecone Vector Store2": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent2",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Embeddings OpenAI1": {
+      "ai_embedding": [
+        [
+          {
+            "node": "Pinecone Vector Store",
+            "type": "ai_embedding",
+            "index": 0
+          },
+          {
+            "node": "Pinecone Vector Store2",
+            "type": "ai_embedding",
+            "index": 0
+          },
+          {
+            "node": "Pinecone Vector Store1",
+            "type": "ai_embedding",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate"
+  },
+  "versionId": "d6fe618c-5e9d-45e5-a228-57e973cea0a4",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "78cb4c7e6760dfc6f19185dc866dd3fef6bb608dbb5e1cbc71536689bb8f9e1f"
+  },
+  "id": "lvT2PBv7I1woy7IY",
+  "tags": []
+}
